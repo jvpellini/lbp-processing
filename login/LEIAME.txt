@@ -1,7 +1,6 @@
 TRABALHO LBP
 
 Nome: Joao Victor Kruger Pellini
-GRR: GRR20252456
 
 O pacote esta organizado da seguinte forma:
 
