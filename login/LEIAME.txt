@@ -1,0 +1,236 @@
+TRABALHO LBP
+
+Nome: Joao Victor Kruger Pellini
+GRR: GRR20252456
+
+O pacote esta organizado da seguinte forma:
+
+login/
+
+* src/
+  -- argumentos.c
+  -- argumentos.h
+  -- diretorio.c
+  -- diretorio.h
+  -- lbp.c
+  -- lbp.h
+  -- main.c
+  -- pgm.c
+  -- pgm.h
+  -- saida.c
+  -- saida.h
+  -- Makefile
+* bin/ -> onde sera gerado o programa apos a compilacao.
+* LEIAME -> este documento.
+
+====================================================================
+
+DESCRICAO DOS PRINCIPAIS ARQUIVOS
+
+* main.c:
+  Funcao principal do programa. Controla a leitura dos argumentos,
+  processamento das imagens, calculo dos histogramas e geracao das
+  imagens LBP.
+
+* argumentos.c / argumentos.h:
+  Responsaveis pela leitura e validacao dos argumentos da linha de
+  comando.
+
+* diretorio.c / diretorio.h:
+  Responsaveis pela leitura do diretorio de entrada e identificacao
+  dos arquivos PGM.
+
+* pgm.c / pgm.h:
+  Responsaveis pela leitura das imagens no formato PGM, incluindo
+  os formatos P2 e P5, e pelo gerenciamento da memoria das imagens.
+
+* lbp.c / lbp.h:
+  Contem os algoritmos de calculo do LBP para 8 e 16 vizinhos, alem
+  do calculo dos histogramas e da geracao da imagem LBP.
+
+* saida.c / saida.h:
+  Responsaveis pela escrita do arquivo de caracteristicas e pela
+  gravacao das imagens LBP.
+
+* Makefile:
+  Automatiza a compilacao do programa.
+
+* bin/lbp:
+  Executavel gerado durante a compilacao.
+
+====================================================================
+
+COMPILACAO
+
+Para compilar o programa, entre no diretorio que contem o Makefile
+e execute:
+
+make
+
+Para remover os arquivos gerados pela compilacao:
+
+make clean
+
+O executavel sera gerado no diretorio:
+
+login/bin/
+
+====================================================================
+
+EXECUCAO
+
+O programa pode ser executado utilizando:
+
+./bin/lbp -d <diretorio> -n <vizinhos> -o <arquivo_saida>
+
+Quando for desejada tambem a geracao das imagens LBP, pode ser
+utilizada a opcao:
+
+./bin/lbp -d <diretorio> -n <vizinhos> -o <arquivo_saida> -i <diretorio>
+
+A opcao -n aceita os valores 8 ou 16.
+
+Exemplo:
+
+./bin/lbp -d testes/ -n 8 -o saida.txt -i imagem_gerada/
+
+A opcao -h imprime uma mensagem com as instrucoes de uso do programa.
+
+Exemplo:
+
+./bin/lbp -h
+
+====================================================================
+
+ALGORITMOS E ESTRUTURAS DE DADOS
+
+O programa implementa o descritor Local Binary Pattern (LBP).
+Foram implementadas duas configuracoes:
+
+* LBP(8,1)
+* LBP(16,2)
+
+LBP(8,1)
+
+No LBP com 8 vizinhos, sao considerados os oito pixels imediatamente
+ao redor do pixel central:
+
+P0 P1 P2
+P3 C  P4
+P5 P6 P7
+
+Cada vizinho e comparado com o pixel central.
+
+Se o valor do vizinho for maior ou igual ao valor do pixel central,
+o bit correspondente recebe 1. Caso contrario, recebe 0.
+
+Depois das comparacoes, os bits sao usados para formar o valor do LBP.
+
+LBP(16,2)
+
+No LBP com 16 vizinhos, sao considerados os pixels que ficam no
+contorno de uma janela 5x5, deixando o bloco 3x3 interno sem ser
+utilizado.
+
+Dessa forma, sao utilizados 16 vizinhos ao redor do pixel central,
+com distancia de ate 2 pixels.
+
+Assim como no LBP(8,1), cada vizinho e comparado com o pixel central.
+Se o vizinho for maior ou igual ao centro, o bit correspondente
+recebe 1; caso contrario, recebe 0.
+
+Os 16 bits formam o valor final do LBP.
+
+HISTOGRAMA
+
+Para cada imagem e calculado um histograma contendo a quantidade
+de ocorrencias de cada codigo LBP.
+
+Para LBP(8,1), sao utilizados 256 bins, correspondentes aos valores
+de 0 a 255.
+
+Para LBP(16,2), sao utilizados 65536 bins, correspondentes aos
+valores de 0 a 65535.
+
+O histograma e armazenado em um vetor de uint32_t. Cada posicao do
+vetor representa um codigo LBP e o valor armazenado nessa posicao
+representa quantas vezes aquele codigo apareceu na imagem.
+
+GERACAO DA IMAGEM LBP
+
+Quando a opcao -i e fornecida, o programa tambem gera uma imagem
+contendo os valores LBP calculados para cada pixel.
+
+Os pixels das bordas, que nao possuem todos os vizinhos necessarios
+para o calculo, recebem valor 0.
+
+As imagens geradas sao salvas no diretorio informado pela opcao -i.
+
+ESTRUTURAS DE DADOS
+
+A principal estrutura utilizada para representar uma imagem e a
+estrutura PGMImage, que armazena:
+
+* largura da imagem;
+* altura da imagem;
+* valor maximo dos pixels;
+* vetor contendo os pixels.
+
+Os pixels sao armazenados sequencialmente em um vetor de uint16_t.
+
+Tambem sao utilizados vetores estaticos para armazenar os
+deslocamentos dx e dy dos vizinhos utilizados no calculo do LBP.
+
+Os histogramas sao armazenados em vetores de uint32_t.
+
+====================================================================
+
+ALTERNATIVAS DE IMPLEMENTACAO E DECISOES
+
+Uma das decisoes de implementacao foi utilizar uma funcao generica
+para o calculo do LBP de um pixel. Essa funcao recebe os deslocamentos
+dos vizinhos, a quantidade de vizinhos e o raio da operacao.
+
+Dessa forma, o mesmo algoritmo pode ser utilizado tanto para
+LBP(8,1) quanto para LBP(16,2), evitando duplicacao desnecessaria
+de codigo.
+
+Tambem foram criadas funcoes especificas:
+
+* lbp_p8()
+* lbp_p16()
+
+Essas funcoes configuram os parametros correspondentes a cada tipo
+de LBP e utilizam a funcao generica para realizar o calculo.
+
+====================================================================
+
+DIFICULDADES ENCONTRADAS
+
+Durante o desenvolvimento foram encontradas algumas dificuldades
+relacionadas principalmente ao tratamento dos arquivos PGM, ao
+gerenciamento de memoria e a organizacao do processamento das imagens.
+
+Uma das dificuldades foi garantir que os pixels das bordas nao fossem
+acessados quando o calculo do LBP necessitava de vizinhos fora dos
+limites da imagem. Isso foi resolvido utilizando o raio correspondente
+a cada configuracao e processando somente os pixels que possuem todos
+os vizinhos necessarios.
+
+Outra dificuldade foi fazer a geracao da imagem LBP funcionar
+separadamente do calculo do histograma. O histograma armazena a
+quantidade de ocorrencias de cada valor, enquanto a imagem LBP
+precisa armazenar o valor calculado para cada pixel. Por isso foram
+utilizadas estruturas e funcoes separadas para essas duas etapas.
+
+Tambem foi necessario utilizar tipos inteiros adequados para os
+valores do LBP. O LBP(8,1) possui valores de ate 255, enquanto o
+LBP(16,2) pode atingir 65535. Por isso foi utilizado uint16_t para
+armazenar os codigos LBP.
+
+====================================================================
+
+BUGS CONHECIDOS
+
+Nao foram identificados bugs conhecidos na versao entregue durante
+os testes realizados.
